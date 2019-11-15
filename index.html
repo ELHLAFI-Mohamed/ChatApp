@@ -1,0 +1,108 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        body{
+            margin-top:400px;
+        } 
+        #messageArea{
+            display:none;
+        }
+    </style>
+</head>
+<body>
+    <h6 style="position: absolute;
+  left: 650px;
+  top: 0px;"> ©ELHLAFI Mohamed</h6>
+    <div class="container">
+        <div id="userFormArea" class="row">
+            <div class="col-md-12">
+                <form id="userForm">
+                    <div class="form-group">
+                        <label>Enter Username</label>
+                        <input class="form-control" id="username" />
+                        <br />
+                        <input type="submit" classe="btn btn-primary" value="Login" />
+
+                    </div>
+                </form>
+
+            </div>
+        </div>
+        <div id="messageArea" class="row">
+            <div class="col-md-4">
+                <div class="well">
+                    <h3>Online Users </h3>
+                    <ul class="list-group" id="users" style="color:#ac0000"></ul>
+                </div>
+            </div>
+            <div class="col-md-8">
+                <div class="chat" id="chat"></div>
+                <form id="messageForm">
+                    <div class="form-group">
+                        <label>Enter message :</label>
+                        <textarea class="form-control" id="message"></textarea>
+                        <br />
+                        <input type="submit" classe="btn btn-primary" value="Send Message" />
+
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script>
+        $(function () {
+            var socket = io.connect();
+            var $messageForm = $('#messageForm');
+            var $message = $('#message');
+            var $chat = $('#chat');
+            var $messageArea = $('#messageArea');
+            var $userFormArea = $('#userFormArea');
+            var $userForm = $('#userForm');
+            var $users = $('#users');
+            var $username = $('#username');
+
+            $messageForm.submit(function (e) {
+                e.preventDefault();
+                socket.emit('send message', $message.val());
+
+                $message.val('');
+
+            });
+            socket.on('new message', function (data) {
+                $chat.append('<div class="well"><strong style="color:#ff4300">' + data.user + ':' + '</strong> </br>' + data.msg + '</div> </br>');
+            });
+            $userForm.submit(function (e) {
+                e.preventDefault();
+                socket.emit('new user', $username.val(), function (data) {
+                    if (data) {
+                        $userFormArea.hide();
+                        $messageArea.show();
+                    }
+                });
+                $username.val('')
+            });
+            console.log("after data");
+            socket.on('get users', function (data) {
+                console.log('data');
+                var html = '';
+                for (i = 0; i < data.length; i++) {
+                    
+                    html += '<li class="list-group-item">' + data[i] +' has joined'+ '</li>';
+
+                }
+                $users.html(html);
+            });
+        });
+    </script>
+
+</body>
+</html>
